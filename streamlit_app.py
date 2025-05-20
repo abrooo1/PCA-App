@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from math import sqrt, erf
 
 # --- Helper Functions ---
-
 def t_cdf(x, dof):
     if dof <= 0:
         return 0.5
@@ -97,10 +96,10 @@ def betacf(x, a, b):
 # --- Main App Starts Here ---
 st.set_page_config(page_title="IOM DRU Correlation App", layout="centered")
 
-# Display IOM Logo (Private path inside Docker)
+# Display IOM Logo
 st.image("/app/data/iom_logo.svg", use_container_width=True)
 
-# Centered Single-Line Title
+# Title
 st.markdown("""
 <div style='text-align: center; padding: 14px;'>
     <h2 style='margin: 0; font-size: 20px;'>
@@ -112,14 +111,16 @@ st.markdown("""
 # Introduction Section
 st.markdown("""
 <div style='padding: 16px; font-size: 14px; line-height: 1.6; max-width: 800px; margin: auto; text-align: left;'>
-    <p><strong>The International Organization for Migration (IOM)</strong>, through its Displacement Tracking Matrix (DTM) methodology and Survey component, deployed a Household-Level Survey (HLS) in the North Western zone of the Tigray region and Zone 3 of the Contested Areas (Ethiopia) in February 2025. The target population includes returning internally displaced persons (IDPs) and non-displaced residents.
-    <p>For the purpose of analysis, household responses are coded between 0 (less favourable) and 1 (more favourable), based on the favourability of the answer. Household scores are then averaged by geographic area and population group (Solutions Index, SI) to compare the vulnerabilities of the two population groups and measure returning IDPs' progress towards achieving a durable solution.
-    <p>The analysis below, based on Pearson correlation coefficient analysis, can be performed to evaluate the relationship between variables. Understanding positive relationships between variables can help identify which interventions are more likely to have the largest impact if implemented together. This data can be used to design multisectoral, area-based interventions.</p>
+    <p><strong>The International Organization for Migration (IOM)</strong>, through its Displacement Tracking Matrix (DTM) methodology and Survey component, deployed a Household-Level Survey (HLS) in the North Western zone of the Tigray region and Zone 3 of the Contested Areas (Ethiopia) in February 2025. The target population includes returning internally displaced persons (IDPs) and non-displaced residents. 
+    <p>For the purpose of analysis, household responses are coded between 0 (less favourable) and 1 (more favourable) based on the favourability of the answer. Household scores are then averaged by geographic area and population group (Solutions Index, SI) to compare the vulnerabilities of the two population groups, and measure returning IDPs progress towards achieving a durable solution.  
+    <p>The analysis below, based on Pearson correlation coefficient analysis, can be performed to evaluate the relationship between variables. Understanding positive relationship between variables can help to identify which interventions are more likely to have the largest impact if implemented together. This data can be used to design multisectoral, area-based interventions.</p>
+  
 </div>
 """, unsafe_allow_html=True)
 
 # Divider
 st.markdown("<hr style='margin-top: 20px; margin-bottom: 20px;'/>", unsafe_allow_html=True)
+
 
 # Custom CSS for better spacing and readability
 st.markdown("""
@@ -138,53 +139,51 @@ st.markdown("""
     font-size: 28px;
     font-weight: bold;
     margin-top: 5px;
-    color: #000;
+    color: #000; /* Ensures black text */
 }
 </style>
 """, unsafe_allow_html=True)
 
 try:
-    # Load Excel file (private path inside Docker)
+    # Load Excel file
     df = pd.read_excel("/app/data/data.xlsx")
-
     if df.empty:
         st.warning("❌ The Excel file is empty.")
     else:
-        required_cols = ["OCHA Region", "OCHA Zone", "OCHA Woreda"]
+        required_cols = ["Region", "Zone", "Woreda"]
         missing = [col for col in required_cols if col not in df.columns]
-
         if missing:
             st.error(f"❌ Missing required column(s): {', '.join(missing)}")
         else:
             st.subheader("🔍 Apply Cascading Filters")
 
-            # Step 1: Select OCHA Region
-            regions = ["All"] + sorted(df["OCHA Region"].dropna().unique().astype(str).tolist())
-            selected_region = st.selectbox("Select OCHA Region", options=regions, index=0)
+            # Step 1: Select Region
+            regions = ["All"] + sorted(df["Region"].dropna().unique().astype(str).tolist())
+            selected_region = st.selectbox("Select Region", options=regions, index=0)
 
             # Step 2: Filter Zones based on selected Region
-            filtered_zone_df = df if selected_region == "All" else df[df["OCHA Region"] == selected_region]
-            zones = ["All"] + sorted(filtered_zone_df["OCHA Zone"].dropna().unique().astype(str).tolist())
-            selected_zone = st.selectbox("Select OCHA Zone", options=zones, index=0)
+            filtered_zone_df = df if selected_region == "All" else df[df["Region"] == selected_region]
+            zones = ["All"] + sorted(filtered_zone_df["Zone"].dropna().unique().astype(str).tolist())
+            selected_zone = st.selectbox("Select Zone", options=zones, index=0)
 
             # Step 3: Filter Woredas based on selected Region and Zone
             if selected_region == "All":
                 filtered_woreda_df = df
             elif selected_zone == "All":
-                filtered_woreda_df = df[df["OCHA Region"] == selected_region]
+                filtered_woreda_df = df[df["Region"] == selected_region]
             else:
-                filtered_woreda_df = df[(df["OCHA Region"] == selected_region) & (df["OCHA Zone"] == selected_zone)]
-            woredas = ["All"] + sorted(filtered_woreda_df["OCHA Woreda"].dropna().unique().astype(str).tolist())
-            selected_woreda = st.selectbox("Select OCHA Woreda", options=woredas, index=0)
+                filtered_woreda_df = df[(df["Region"] == selected_region) & (df["Zone"] == selected_zone)]
+            woredas = ["All"] + sorted(filtered_woreda_df["Woreda"].dropna().unique().astype(str).tolist())
+            selected_woreda = st.selectbox("Select Woreda", options=woredas, index=0)
 
             # Apply cascading filters
             filtered_df = df.copy()
             if selected_region != "All":
-                filtered_df = filtered_df[filtered_df["OCHA Region"] == selected_region]
+                filtered_df = filtered_df[filtered_df["Region"] == selected_region]
             if selected_zone != "All":
-                filtered_df = filtered_df[filtered_df["OCHA Zone"] == selected_zone]
+                filtered_df = filtered_df[filtered_df["Zone"] == selected_zone]
             if selected_woreda != "All":
-                filtered_df = filtered_df[filtered_df["OCHA Woreda"] == selected_woreda]
+                filtered_df = filtered_df[filtered_df["Woreda"] == selected_woreda]
 
             st.info(f"✅ {len(filtered_df)} rows remain after filtering.")
 
@@ -216,11 +215,9 @@ try:
                         n = len(x)
                         mean_x = np.mean(x)
                         mean_y = np.mean(y)
-
                         numerator = sum((x[i] - mean_x) * (y[i] - mean_y) for i in range(n))
                         denom_x = sqrt(sum((xi - mean_x)**2 for xi in x))
                         denom_y = sqrt(sum((yi - mean_y)**2 for yi in y))
-
                         r = numerator / (denom_x * denom_y)
 
                         # Hypothesis Test
@@ -230,7 +227,6 @@ try:
                         # Display Results Horizontally
                         st.subheader("📊 Results")
                         col1, col2, col3 = st.columns(3)
-
                         with col1:
                             st.markdown(f"""
                             <div class="metric-box">
@@ -238,7 +234,6 @@ try:
                                 <div class="metric-value">{n}</div>
                             </div>
                             """, unsafe_allow_html=True)
-
                         with col2:
                             st.markdown(f"""
                             <div class="metric-box">
@@ -246,7 +241,6 @@ try:
                                 <div class="metric-value">{r:.3f}</div>
                             </div>
                             """, unsafe_allow_html=True)
-
                         with col3:
                             st.markdown(f"""
                             <div class="metric-box">
@@ -276,4 +270,6 @@ try:
                         st.pyplot(fig)
 
 except FileNotFoundError:
-    st.error
+    st.error("❌ Excel file not found. Make sure 'data.xlsx' exists in the same directory.")
+except Exception as e:
+    st.error(f"❌ Error loading file: {str(e)}")
