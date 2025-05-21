@@ -145,7 +145,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # Try loading from Docker path first, then fall back to local path
 try:
-    df = pd.read_excel(r"C:/Users/aadma/data/data.xlsx")
+    df = pd.read_excel("/app/data/data.xlsx"")
 except FileNotFoundError:
     try:
         df = pd.read_excel("data.xlsx")
