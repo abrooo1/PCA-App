@@ -97,7 +97,7 @@ def betacf(x, a, b):
 st.set_page_config(page_title="IOM DRU Correlation App", layout="centered")
 
 # Display IOM Logo
-st.image("/app/data/iom_logo.svg", use_container_width=True)
+st.image("iom_logo.svg", use_container_width=True)
 
 # Title
 st.markdown("""
