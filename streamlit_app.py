@@ -143,12 +143,20 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
+# Try loading from Docker path first, then fall back to local path
 try:
-    # Load Excel file
-    df = pd.read_excel("/app/data/data.xlsx")
-    if df.empty:
-        st.warning("❌ The Excel file is empty.")
+    df = pd.read_excel("C:\Users\aadma\data/data.xlsx")
+except FileNotFoundError:
+    try:
+        df = pd.read_excel("data.xlsx")
+    except FileNotFoundError:
+        st.error("❌ Excel file not found. Please ensure 'data.xlsx' is in the correct location.")
+        st.stop()
+# try:
+#     # Load Excel file
+#     df = pd.read_excel("/app/data/data.xlsx")
+#     if df.empty:
+#         st.warning("❌ The Excel file is empty.")
     else:
         required_cols = ["Region", "Zone", "Woreda"]
         missing = [col for col in required_cols if col not in df.columns]
