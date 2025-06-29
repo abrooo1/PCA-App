@@ -1,6 +1,6 @@
 streamlit
 pandas
-openpyxl
 numpy
 matplotlib
-reportlab
+scikit-learn  # Only needed if doing PCA
+openpyxl        # For Excel support
